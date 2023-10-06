@@ -59,7 +59,7 @@ public class BrokerConfigurationManager {
             // response can be either string or JSON object.
             CreateConsumerResponse response = mapper.readValue(serializedResponse, CreateConsumerResponse.class);
 
-            if(response.error != null) {
+            if (response.error != null && !response.error.isEmpty()) {
                 throw new MemphisException("Error creating consumer: " + response.error);
             }
 
@@ -95,7 +95,7 @@ public class BrokerConfigurationManager {
             // response can be either string or JSON object.
             CreateProducerResponse response = mapper.readValue(serializedResponse, CreateProducerResponse.class);
 
-            if(response.error != null && !response.error.isEmpty()) {
+            if (response.error != null && !response.error.isEmpty()) {
                 throw new MemphisException("Error creating producer: " + response.error);
             }
 
