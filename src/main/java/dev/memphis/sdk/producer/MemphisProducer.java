@@ -70,11 +70,11 @@ public class MemphisProducer {
 
         @Override
         public void run() {
-            while(!canceled) {
-                if(msgQueue.isEmpty()) {
-                    try{
+            while (!canceled) {
+                if (msgQueue.isEmpty()) {
+                    try {
                         this.wait(100);
-                    } catch(InterruptedException e) {
+                    } catch (InterruptedException e) {
                         // ignore exception
                     }
                 } else {
@@ -83,7 +83,7 @@ public class MemphisProducer {
                     try {
                         PublishAck ack = jetStreamContext.publish(msg);
                         msgQueue.poll();
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         errorMsg = "Error occurred while connecting to Memphis: " + e.getMessage();
                         canceled = true;
                         hasError = true;
@@ -112,7 +112,7 @@ public class MemphisProducer {
     public MemphisProducer(Connection connection, String connectionId, ProducerOptions producerOptions, List<Integer> partitions) throws MemphisConnectException {
         try {
             this.jetStreamContext = connection.jetStream();
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw new MemphisConnectException(e.getMessage());
         }
         this.stationName = producerOptions.stationName;
@@ -130,12 +130,12 @@ public class MemphisProducer {
 
     /**
      * Send message to the station synchronously.
+     *
      * @param msg A byte array constituting the body of the message.
      * @return PublishAck object providing information about success or failure
      * @throws MemphisException if a problem is encountered.
      */
-    public PublishAck produce(byte[] msg) throws MemphisException {
-        var headers = new Headers();
+    public PublishAck produce(Headers headers, byte[] msg) throws MemphisException {
         headers.put("$memphis_connectionId", connectionId);
         headers.put("$memphis_producedBy", producerName);
 
@@ -151,7 +151,7 @@ public class MemphisProducer {
         PublishAck ack = null;
         try {
             ack = jetStreamContext.publish(natsMsg);
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new MemphisException("Error occurred while connecting to Memphis: " + e.getMessage());
         }
 
@@ -161,11 +161,11 @@ public class MemphisProducer {
     /**
      * Adds message to an internal queue to be sent by a background thread.
      * If the queue is full, this call blocks.
+     *
      * @param msg A byte array constituting the body of the message.
      * @throws MemphisException if a problem is encountered.
      */
-    public void produceNonblocking(byte[] msg) throws MemphisException {
-        var headers = new Headers();
+    public void produceNonblocking(Headers headers, byte[] msg) throws MemphisException {
         headers.put("$memphis_connectionId", connectionId);
         headers.put("$memphis_producedBy", producerName);
 
@@ -180,7 +180,7 @@ public class MemphisProducer {
 
         // let the queue drain to half of its maximum size
         if (msgQueue.size() >= queueSize) {
-            while(msgQueue.size() >= queueSize / 2) {
+            while (msgQueue.size() >= queueSize / 2) {
                 try {
                     this.wait(100);
                 } catch (InterruptedException e) {
