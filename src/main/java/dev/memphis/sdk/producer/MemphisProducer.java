@@ -11,6 +11,7 @@ import io.nats.client.impl.NatsMessage;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -135,9 +136,12 @@ public class MemphisProducer {
      * @return PublishAck object providing information about success or failure
      * @throws MemphisException if a problem is encountered.
      */
-    public PublishAck produce(Headers headers, byte[] msg) throws MemphisException {
+    public PublishAck produce(Map<String, String> metadata, byte[] msg) throws MemphisException {
+        Headers headers = new Headers();
+        metadata.forEach(headers::put);
         headers.put("$memphis_connectionId", connectionId);
         headers.put("$memphis_producedBy", producerName);
+
 
         int partNum = partIter.next();
         String partitionName = stationName + "$" + partNum + STATION_SUFFIX;
@@ -165,7 +169,10 @@ public class MemphisProducer {
      * @param msg A byte array constituting the body of the message.
      * @throws MemphisException if a problem is encountered.
      */
-    public void produceNonblocking(Headers headers, byte[] msg) throws MemphisException {
+    public void produceNonblocking(Map<String, String> metadata, byte[] msg) throws MemphisException {
+        Headers headers = new Headers();
+
+        metadata.forEach(headers::put);
         headers.put("$memphis_connectionId", connectionId);
         headers.put("$memphis_producedBy", producerName);
 
